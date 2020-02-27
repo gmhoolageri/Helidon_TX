@@ -28,6 +28,7 @@ import com.servicemanager.database.DatabaseFacadeImpl;
 import com.servicemanager.entities.ServiceRequestDO;
 import com.servicemanager.entities.TaskDO;
 import com.servicemanager.factories.CreateRequestTaskQueueProducer;
+import com.servicemanager.util.Logger;
 import com.servicemanager.util.Util;
 
 import liquibase.Contexts;
@@ -124,6 +125,7 @@ public class DirtyReadCheck {
             }
         }
 
+        // WAIT FOR CONSUMER TO JOIN THE MAIN THREAD
         try {
             consumer.join();
         } catch (InterruptedException e) {
@@ -234,9 +236,10 @@ public class DirtyReadCheck {
 
             if (optionalTask.isPresent()) {
                 TaskDO task = optionalTask.get();
+                Logger.debug("GOT TASK:" + task);
                 Assert.assertTrue(
-                        "READ THE SERVICE REQUEST AND FIRST TASK IS NOT TaskPersistIdentityDomainInDB. THIS IS AN EXAMPLE OF DIRTY READ.",
-                        task.getInvocationClass().contains("TaskPersistIdentityDomainInDB"));
+                        "READ THE SERVICE REQUEST AND FIRST TASK SEQUENCE IS NOT 1. THIS IS AN EXAMPLE OF DIRTY READ.",
+                        task.getExecutionSequence().intValue() == 1);
 
             }
             return optionalTask;
