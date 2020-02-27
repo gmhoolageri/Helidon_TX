@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration monitorInterval="60">
+	<Properties>
+		<Property name="request">request</Property>
+	</Properties>
+	<Appenders>
+		<Console name="Console-Appender" target="SYSTEM_OUT">
+			<PatternLayout
+				pattern="[%d{DEFAULT}] [%-5level] [%c{36}] - %msg%n" />
+		</Console>
+		<Routing name="Routing">
+			<Routes pattern="$${ctx:serviceInstanceId}">
+				<Route>
+					<File name="File-${ctx:serviceInstanceId}"
+						fileName="${sys:log-path}/${request}/otmsm-${ctx:serviceInstanceId}.log">
+						<PatternLayout>
+							<Pattern> [%d{DEFAULT}] [%-5level] [%c{36}] - %msg%n
+							</Pattern>
+						</PatternLayout>
+					</File>
+				</Route>
+			</Routes>
+		</Routing>
+
+		<RollingFile name="Rolling-File-Appender"
+			fileName="${sys:log-path}/otmsm.log"
+			filePattern="${sys:log-path}/$${date:yyyy-MM}/otmsm-%d{yyyy-MM-dd}.log">
+			<PatternLayout>
+				<Pattern>[%d{DEFAULT}] [%-5level] [%c{36}] - %msg%n
+				</Pattern>
+			</PatternLayout>
+			<Policies>
+				<SizeBasedTriggeringPolicy size="100MB" />
+			</Policies>
+		</RollingFile>
+	</Appenders>
+	<Loggers>
+		<Logger name="com.servicemanager" level="debug"
+			includeLocation="true" additivity="false">
+			<AppenderRef ref="Rolling-File-Appender" />
+			<AppenderRef ref="Routing" />
+		</Logger>
+		<Logger name="org.jboss" level="debug" additivity="false">
+			<AppenderRef ref="Console-Appender" />
+			<AppenderRef ref="Rolling-File-Appender" />
+		</Logger>
+		<Logger name="io.smallrye.openapi" level="info"
+			additivity="false">
+			<AppenderRef ref="Console-Appender" />
+		</Logger>
+		<Logger name="com.arjuna.ats.arjuna" level="debug"
+			additivity="false">
+			<AppenderRef ref="Console-Appender" />
+		</Logger>
+		<Root level="debug">
+			<AppenderRef ref="Console-Appender" />
+			<AppenderRef ref="Rolling-File-Appender" />
+			<AppenderRef ref="Routing" />
+		</Root>
+	</Loggers>
+</Configuration>
